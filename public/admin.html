@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BNCC Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --bg-body: #f1f5f9;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+            padding: 2.5rem 2rem 5rem;
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-content {
+            max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;
+        }
+        .navbar h1 { font-family: 'Outfit', sans-serif; font-size: 1.8rem; font-weight: 700; }
+        .navbar p { opacity: 0.9; font-size: 0.95rem; margin-top: 4px; }
+
+        .container { max-width: 1200px; margin: -3rem auto 2rem; padding: 0 20px; }
+        .card {
+            background: white; border-radius: 16px; padding: 1.5rem; border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .filter-bar {
+            display: flex; gap: 15px; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; justify-content: space-between;
+        }
+        .filter-group { display: flex; gap: 10px; align-items: center; }
+
+        .search-input, .filter-select {
+            padding: 10px 16px; border: 1px solid #cbd5e1; border-radius: 8px; outline: none; font-size: 0.9rem; transition: border 0.2s;
+        }
+        .search-input { width: 300px; }
+        .filter-select { cursor: pointer; background-color: white; }
+        .search-input:focus, .filter-select:focus { border-color: var(--primary); }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        thead th {
+            background-color: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase;
+            padding: 1rem; font-weight: 700; border-bottom: 2px solid #e2e8f0;
+        }
+        tbody td { padding: 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: top; font-size: 0.9rem; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; }
+
+        .user-name { font-weight: 600; color: #0f172a; display: block; }
+        .user-email { font-size: 0.85rem; color: #64748b; margin-top: 2px; }
+        .division-badge {
+            display: inline-block; font-size: 0.7rem; font-weight: 700; color: var(--primary);
+            background: #e0e7ff; padding: 2px 8px; border-radius: 4px; margin-top: 4px;
+        }
+        .rating-pill {
+            background: #fffbeb; color: #d97706; padding: 4px 8px; border-radius: 6px;
+            font-weight: 700; font-size: 0.9rem; display: inline-flex; align-items: center;
+            gap: 4px; border: 1px solid #fcd34d;
+        }
+
+        select.status-select {
+            appearance: none; -webkit-appearance: none; padding: 6px 12px; padding-right: 30px;
+            border-radius: 99px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;
+            cursor: pointer; border: 1px solid transparent; text-align: center;
+            background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23444%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+            background-repeat: no-repeat; background-position: right 10px center; background-size: 8px;
+        }
+        select.status-select option { background-color: white; color: #0f172a; }
+
+        .status-open { background-color: #fee2e2; color: #dc2626; border-color: #fecaca; }
+        .status-review { background-color: #ffedd5; color: #c2410c; border-color: #fed7aa; }
+        .status-resolved { background-color: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+
+        .action-btn {
+            width: 32px; height: 32px; border-radius: 8px; cursor: pointer; border: 1px solid transparent;
+            display: flex; align-items: center; justify-content: center; margin-left: 6px;
+        }
+        .btn-edit { background: white; border-color: #cbd5e1; color: #475569; }
+        .btn-edit:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-delete { background: white; border-color: #ef4444; color: #ef4444; }
+        .btn-delete:hover { background: #ef4444; color: white; }
+
+        .modal {
+            display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5); 
+            align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background-color: #fff; padding: 2rem; border-radius: 16px; width: 90%; max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2); 
+        }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .modal-header h2 { font-family: 'Outfit', sans-serif; font-size: 1.5rem; }
+        .close-modal { cursor: pointer; font-size: 1.5rem; color: #64748b; }
+
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-full { margin-bottom: 15px; }
+        
+        .modal-label { display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 5px; }
+        .modal-input { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; }
+        .modal-textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.9rem; min-height: 80px; resize: vertical; }
+
+        .btn-save {
+            width: 100%; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px;
+            font-weight: 700; cursor: pointer; margin-top: 10px;
+        }
+        .btn-save:hover { background: #4338ca; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="navbar-content">
+            <div>
+                <h1>Admin Dashboard</h1>
+                <p>Manage Feedback & Insights</p>
+            </div>
+            <div style="background: rgba(255,255,255,0.2); padding: 5px 15px; border-radius: 20px; font-size: 0.85rem;">
+                👋 Hello, Admin
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <h3 style="font-family: 'Outfit'; color: #1e293b;">Data Feedback</h3>
+                </div>
+                
+                <div class="filter-group">
+                    <select id="statusFilter" class="filter-select">
+                        <option value="all">📌 All Status</option>
+                        <option value="open">🔴 Open</option>
+                        <option value="in-review">🟡 In Review</option>
+                        <option value="resolved">🟢 Done</option>
+                    </select>
+
+                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Cari nama / event...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="feedbackTable">
+                    <thead>
+                        <tr>
+                            <th width="15%">Date</th>
+                            <th width="20%">Participant</th>
+                            <th width="20%">Event</th>
+                            <th width="8%">Rat</th>
+                            <th width="22%">Comment</th>
+                            <th width="15%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Edit Feedback</h2>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="editForm" onsubmit="saveChanges(event)">
+                <input type="hidden" id="editId">
+                
+                <div class="form-full">
+                    <label class="modal-label">Nama Lengkap</label>
+                    <input type="text" id="editName" class="modal-input" required>
+                </div>
+
+                <div class="form-grid">
+                    <div>
+                        <label class="modal-label">Email</label>
+                        <input type="email" id="editEmail" class="modal-input" required>
+                    </div>
+                    <div>
+                        <label class="modal-label">Divisi</label>
+                        <select id="editDivision" class="modal-input">
+                            <option value="LnT">LnT</option>
+                            <option value="EEO">EEO</option>
+                            <option value="PR">PR</option>
+                            <option value="HRD">HRD</option>
+                            <option value="RnD">RnD</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-full">
+                    <label class="modal-label">Event</label>
+                    <input type="text" id="editEvent" class="modal-input" required>
+                </div>
+
+                <div class="form-grid">
+                    <div>
+                        <label class="modal-label">Rating</label>
+                        <input type="number" id="editRating" class="modal-input" min="1" max="5" required>
+                    </div>
+                    <div>
+                        <label class="modal-label">Status</label>
+                        <select id="editStatus" class="modal-input">
+                            <option value="open">Open</option>
+                            <option value="in-review">In Review</option>
+                            <option value="resolved">Resolved</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-full">
+                    <label class="modal-label">Komentar</label>
+                    <textarea id="editComment" class="modal-textarea"></textarea>
+                </div>
+
+                <div class="form-full">
+                    <label class="modal-label">Saran</label>
+                    <textarea id="editSuggestion" class="modal-textarea"></textarea>
+                </div>
+
+                <button type="submit" class="btn-save">Simpan Perubahan</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+        const API_URL = 'http://localhost:3000/api/feedback';
+
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("🕵️‍♂️ DETEKTIF MODE: ON");
+            
+            const searchInput = document.getElementById('searchInput');
+            const statusFilter = document.getElementById('statusFilter');
+
+            if(searchInput) {
+                searchInput.addEventListener('input', () => {
+                    console.log(`⌨️ User mengetik: "${searchInput.value}"`);
+                    filterData();
+                });
+            }
+            if(statusFilter) statusFilter.addEventListener('change', filterData);
+
+            loadFeedback();
+        });
+
+        async function loadFeedback() {
+            try {
+                const res = await fetch(API_URL);
+                allData = await res.json();
+                console.log("📦 Data mentah dari server:", allData); 
+                filterData(); 
+            } catch (err) {
+                console.error("❌ Gagal load data:", err);
+            }
+        }
+
+        function filterData() {
+        const searchInput = document.getElementById('searchInput');
+        const statusFilter = document.getElementById('statusFilter');
+
+        if (!searchInput || !statusFilter) return;
+
+        const query = searchInput.value.toLowerCase().trim();
+        const status = statusFilter.value;
+
+        const filtered = allData.filter(item => {
+        
+            const rowString = JSON.stringify(item).toLowerCase();
+
+            const matchText = rowString.includes(query);
+
+            const matchStatus = status === 'all' || item.status === status;
+
+            return matchText && matchStatus;
+        });
+
+        renderTable(filtered);
+    }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:2rem; color:#64748b;">Tidak ada data ditemukan.</td></tr>';
+                return;
+            }
+
+            const rowsHTML = data.map(item => {
+                const date = new Date(item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: '2-digit' });
+                
+                let statusClass = 'status-open';
+                if (item.status === 'in-review') statusClass = 'status-review';
+                if (item.status === 'resolved') statusClass = 'status-resolved';
+
+                const safeComment = item.comment || "-";
+                const safeSuggestion = item.suggestion ? `<div style="font-size:0.75rem; background:#f1f5f9; padding:4px; margin-top:4px; border-radius:4px;">💡 ${item.suggestion}</div>` : '';
+
+                return `
+                    <tr>
+                        <td style="color:#64748b; font-size:0.85rem;">${date}</td>
+                        <td>
+                            <span class="user-name">${item.name || "Tanpa Nama"}</span>
+                            <div class="user-email">${item.email || "-"}</div>
+                            <span class="division-badge">${item.division || "-"}</span>
+                        </td>
+                        <td style="font-weight: 500;">${item.eventName || "-"}</td>
+                        <td><div class="rating-pill">★ ${item.rating}</div></td>
+                        <td>
+                            <div style="font-size:0.9rem;">"${safeComment}"</div>
+                            ${safeSuggestion}
+                        </td>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <select class="status-select ${statusClass}" onchange="updateStatusQuick('${item.id}', this.value)">
+                                    <option value="open" ${item.status === 'open' ? 'selected' : ''}>OPEN</option>
+                                    <option value="in-review" ${item.status === 'in-review' ? 'selected' : ''}>REVIEW</option>
+                                    <option value="resolved" ${item.status === 'resolved' ? 'selected' : ''}>DONE</option>
+                                </select>
+                                <button class="action-btn btn-edit" onclick="openEditModal('${item.id}')" title="Edit">✎</button>
+                                <button class="action-btn btn-delete" onclick="deleteFeedback('${item.id}')" title="Hapus">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rowsHTML;
+        }
+
+        async function updateStatusQuick(id, newStatus) {
+            await fetch(`${API_URL}/${id}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus })
+            });
+            const item = allData.find(d => d.id === id); if(item) item.status = newStatus; filterData();
+        }
+
+        async function deleteFeedback(id) {
+            if (confirm("Hapus data ini?")) {
+                await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                allData = allData.filter(d => d.id !== id); filterData();
+            }
+        }
+
+        function openEditModal(id) {
+            const item = allData.find(d => d.id === id); if (!item) return;
+            document.getElementById('editId').value = item.id;
+            document.getElementById('editName').value = item.name || "";
+            document.getElementById('editEmail').value = item.email || "";
+            document.getElementById('editDivision').value = item.division || "LnT";
+            document.getElementById('editEvent').value = item.eventName || "";
+            document.getElementById('editRating').value = item.rating || 1;
+            document.getElementById('editStatus').value = item.status || "open";
+            document.getElementById('editComment').value = item.comment || "";
+            document.getElementById('editSuggestion').value = item.suggestion || "";
+            document.getElementById('editModal').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('editModal').style.display = 'none'; }
+        window.onclick = function(event) { if (event.target == document.getElementById('editModal')) closeModal(); }
+
+        async function saveChanges(e) {
+            e.preventDefault();
+            const id = document.getElementById('editId').value;
+            const updatedData = {
+                name: document.getElementById('editName').value,
+                email: document.getElementById('editEmail').value,
+                division: document.getElementById('editDivision').value,
+                eventName: document.getElementById('editEvent').value,
+                rating: parseInt(document.getElementById('editRating').value),
+                status: document.getElementById('editStatus').value,
+                comment: document.getElementById('editComment').value,
+                suggestion: document.getElementById('editSuggestion').value
+            };
+            await fetch(`${API_URL}/${id}`, {
+                method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(updatedData)
+            });
+            const index = allData.findIndex(d => d.id === id);
+            if(index !== -1) allData[index] = { ...allData[index], ...updatedData };
+            closeModal(); filterData(); alert("Data tersimpan!");
+        }
+    </script>
+</body>
+</html>
